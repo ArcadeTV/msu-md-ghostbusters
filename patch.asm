@@ -52,15 +52,55 @@ Game
         org     $1A4                            ; ROM_END
         dc.l    $000FFFFF                       ; Overwrite with 8 MBIT size
         
+        org     $5A2
+        jsr     MSU_StopSound
+        nop
+        
+        org     $774                            ; Stage Music
+        jsr     MSU_SetSoundID_FF00B2
+        nop 
+        nop 
+        
+        org     $992C                           ; Ghost ran away
+        jsr     MSU_SetSoundID_FF0008
+        nop 
+        nop
 
         org     $9F7A                           ; Cheat <-------------------------------------------> Disable!!
         dc.w    $6004
         
-        org     $14F8E
+        org     $B6FC                           ; Encounter
+        jsr     MSU_MusicBypass
+        
+        org     $121EC                          ; Shop
+        jsr     MSU_SetSoundID_8C
+        nop
+        
+        org     $12A1C                          ; Pause? $F1
+        jsr     MSU_StopSound
+        nop
+        
+        org     $12CA6
+        jsr     MSU_SetSoundID_8A               ; Pause Menu
+        nop
+        
+        org     $136DA
+        jsr     MSU_SetSoundID_89               ; Stage Select
+        nop
+        
+        org     $14958
+        jsr     MSU_SetSoundID_8D               ; Stage Introduction
+        nop
+        
+        org     $14F8E                          ; SOUND TEST
         jsr     MSU_MusicBypass
         
         org     $16C4E
-        jsr     MSU_SetSoundID_93
+        jsr     MSU_SetSoundID_93               ; Main Theme
+        nop
+
+        org     $178FC
+        jsr     MSU_SetSoundID_90               ; Character Select
         nop
         
 ; TRACKS -------------------------------------------------------------------------------------------
@@ -97,6 +137,7 @@ MSU_MusicBypass_noSave
         move.w  d1,MCD_CMD                      ; Send MSU-MD command
         addq.b  #1,MCD_CMD_CK                   ; Increment command clock
         move.b  #$00,($A01C0A).l                ; Mute Sound while sending 0 as sound ID to Z80
+        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
         
 .passthrough
@@ -104,20 +145,10 @@ MSU_MusicBypass_noSave
         move.b  d0,($A01C0A).l                  ; Send sound ID to Z80
         rts
 
-MSU_SetSoundID_93
-        jsr     SAVE_ORIGINAL_REGISTERS
-        move.l  #$93,d0
-        jsr     MSU_MusicBypass_noSave
-        rts 
-MSU_SetSoundID_97
-        jsr     SAVE_ORIGINAL_REGISTERS
-        move.l  #$97,d0
-        jsr     MSU_MusicBypass_noSave
-        rts 
 
 SAVE_ORIGINAL_REGISTERS
         move.l  d0,(REG_D0).w                   ; Save d0 to RAM
-        move.l  d1,(REG_D1).w                   ; Save d0 to RAM
+        move.l  d1,(REG_D1).w                   ; Save d1 to RAM
         move.l  a0,(REG_A0).w                   ; Save a0 to RAM
         rts
 
@@ -126,6 +157,78 @@ RESTORE_ORIGINAL_REGISTERS
         move.l  (REG_D0).w,d0                   ; Restore d0 from RAM 
         move.l  (REG_D1).w,d1                   ; Restore d1 from RAM 
         rts 
+
+MSU_StopSound
+        tst.b   MCD_STAT                        ; MSU-MD driver ready?
+        bne.s   MSU_StopSound                   ; If not, test again
+        move.b  #$F1,($A01C0A).l
+        move.w  #($1300|0),MCD_CMD              ; send cmd: pause track, no fade
+        addq.b  #1,MCD_CMD_CK                   ; Increment command clock
+        rts
+        
+MSU_SetSoundID_89                               ; Stage Select
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$89,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+MSU_SetSoundID_8A                               ; Pause Menu
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$8A,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+MSU_SetSoundID_8C                               ; Pause Menu
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$8C,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+MSU_SetSoundID_8D                               ; Stage Introduction
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$8D,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+MSU_SetSoundID_90                               ; Character Select
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$90,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+MSU_SetSoundID_93                               ; Main Theme
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$93,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts     
+MSU_SetSoundID_97                               ; SEGA
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$97,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts 
+        
+MSU_SetSoundID_FF00B2                           ; Stages (multiple)
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.b  ($FF00B2).l,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+
+MSU_SetSoundID_FFFF11                           ; Intros (multiple)
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.b  ($FFFF11).l,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+
+MSU_SetSoundID_FF0008
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.b  ($FF0008).l,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
         
         
         
