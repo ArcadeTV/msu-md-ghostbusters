@@ -27,9 +27,8 @@ MCD_CMD_CK      EQU $A1201F
 
 REG_D0          EQU $FF8880
 REG_D1          EQU $FF8884
-REG_A0          EQU $FF8888
-
-TRACKS          EQU 22
+REG_D2          EQU $FF8888
+REG_A0          EQU $FF888C
 
 
 
@@ -138,13 +137,16 @@ MSUDRV
 MSU_MusicBypass
         jsr     SAVE_ORIGINAL_REGISTERS
 MSU_MusicBypass_noSave
-        move.l  #$00,d1                         ; Set d1 to 1 as counter
+        move.l  #$00,d1                         ; Set d1 to 0 as counter (track number)
+		move.l  #$00,d2                         ; Set d2 to 0 as counter (table index)
         lea     AUDIO_TBL,a0                    ; Load audio table address
 .loop
-        cmp.b   (a0,d1),d0                      ; Compare given sound ID in d0 to table entry
+		move.w 	(a0,d2),d3						; Load table entry into d3
+        cmp.b   d3,d0                      		; Compare given sound ID in d0 to table entry loaded into d3
         beq.s   .ready                          ; If given sound ID matches the entry, d1 is our track number, so we branch to .ready
-        addi    #1,d1                           ; Increment d1 (Index or track number)
-        cmp.b   TRACKS-1,d1                     ; If we reached the total number of tracks, abort.
+        addi    #1,d1                           ; Increment d1 (track number)
+        addi    #2,d2                           ; Increment d2 by word-size (table index)
+        cmp.b   24,d1                     		; If we reached the total number of tracks, abort. (minus 1 for loop-breaking)
         beq.s   .passthrough                    ; Branch to .passthrough
         bra.s   .loop                           ; Branch to .loop
         
@@ -152,8 +154,9 @@ MSU_MusicBypass_noSave
         addi    #1,d1                           ; Increment d1 (skipped in the last repetition of the loop)
         tst.b   MCD_STAT                        ; MSU-MD driver ready?
         bne.s   .ready                          ; If not, test again
-        ori.w   #$1100,d1                       ; Set play command
-        move.w  d1,MCD_CMD                      ; Send MSU-MD command
+		move.w 	(a0,d2),d0
+        move.b  d1,d0                           ; Set play command
+		move.w  d0,MCD_CMD                      ; Send MSU-MD command
         addq.b  #1,MCD_CMD_CK                   ; Increment command clock
         move.b  #$00,($A01C0A).l                ; Mute Sound while sending 0 as sound ID to Z80
         jsr     RESTORE_ORIGINAL_REGISTERS
@@ -168,6 +171,7 @@ MSU_MusicBypass_noSave
 SAVE_ORIGINAL_REGISTERS
         move.l  d0,(REG_D0).w                   ; Save d0 to RAM
         move.l  d1,(REG_D1).w                   ; Save d1 to RAM
+        move.l  d2,(REG_D2).w                   ; Save d2 to RAM
         move.l  a0,(REG_A0).w                   ; Save a0 to RAM
         rts
 
@@ -175,6 +179,7 @@ RESTORE_ORIGINAL_REGISTERS
         move.l  (REG_A0).w,a0                   ; Restore a0 from RAM
         move.l  (REG_D0).w,d0                   ; Restore d0 from RAM 
         move.l  (REG_D1).w,d1                   ; Restore d1 from RAM 
+        move.l  (REG_D2).w,d2                   ; Restore d2 from RAM 
         rts 
 
 MSU_StopSound
@@ -277,32 +282,32 @@ MSU_SetSoundID_FF0008
         
 ; TABLES: ------------------------------------------------------------------------------------------
 
-AUDIO_TBL                                       ; #Track Name                   #No.
-    dc.b    $81                                 ; 1st Case - Home Sweet Home    01
-    dc.b    $82                                 ; 2nd Case - Apartment          02
-    dc.b    $83                                 ; 4th Case - High-Rise Building 03
-    dc.b    $84                                 ; 3rd Case - Woody House        04
-    dc.b    $85                                 ; 5th Case - Castle             05
-    dc.b    $86                                 ; Final Case - Deep Hole        06
-    dc.b    $87                                 ; Encounter!                    07
-    dc.b    $88                                 ; Ending Theme                  08
-    dc.b    $89                                 ; Stage Select                  09
-    dc.b    $8A                                 ; Pause Menu                    10
-    dc.b    $8B                                 ; Stage Epilogue                11
-    dc.b    $8C                                 ; Shop                          12
-    dc.b    $8D                                 ; Stage Introduction            13
-    dc.b    $8E                                 ; Stage Clear                   14
-    dc.b    $8F                                 ; Mid-Ghost Captured            15
-    dc.b    $90                                 ; Character Select              16
-    dc.b    $91                                 ; Boss Theme                    17
-    dc.b    $92                                 ; Character Selected            18
-    dc.b    $93                                 ; Main Theme                    19
-    dc.b    $94                                 ; Final Case Start              20
-    dc.b    $95                                 ; Final Boss                    21
-    dc.b    $96                                 ; Game Over                     22
-    dc.b    $97                                 ; SEGA                          23
-    dc.b    $98                                 ; HQ Meeting                    24
-    dc.b    $99                                 ; Please catch all the ghosts   25
+AUDIO_TBL  ;cmd;code                            ; #Track Name                   #No.
+    dc.w    $1281                               ; 1st Case - Home Sweet Home    01
+    dc.w    $1282                               ; 2nd Case - Apartment          02
+    dc.w    $1283                               ; 4th Case - High-Rise Building 03
+    dc.w    $1284                               ; 3rd Case - Woody House        04
+    dc.w    $1285                               ; 5th Case - Castle             05
+    dc.w    $1286                               ; Final Case - Deep Hole        06
+    dc.w    $1287                               ; Encounter!                    07
+    dc.w    $1188                               ; Ending Theme                  08
+    dc.w    $1289                               ; Stage Select                  09
+    dc.w    $128A                               ; Pause Menu                    10
+    dc.w    $128B                               ; Stage Epilogue                11
+    dc.w    $128C                               ; Shop                          12
+    dc.w    $128D                               ; Stage Introduction            13
+    dc.w    $118E                               ; Stage Clear                   14
+    dc.w    $118F                               ; Mid-Ghost Captured            15
+    dc.w    $1290                               ; Character Select              16
+    dc.w    $1291                               ; Boss Theme                    17
+    dc.w    $1192                               ; Character Selected            18
+    dc.w    $1193                               ; Main Theme                    19
+    dc.w    $1194                               ; Final Case Start              20
+    dc.w    $1295                               ; Final Boss                    21
+    dc.w    $1196                               ; Game Over                     22
+    dc.w    $1197                               ; SEGA                          23
+    dc.w    $1298                               ; HQ Meeting                    24
+    dc.w    $1299                               ; Please catch all the ghosts   25
         
 ; MSU-MD INIT: -------------------------------------------------------------------------------------
 
