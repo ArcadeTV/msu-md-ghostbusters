@@ -61,10 +61,10 @@ Game
         nop 
         nop 
         
-		org 	$CD2
-		jsr     MSU_SetSoundID_8F               ; Mid-Ghost captured
+        org     $CD2
+        jsr     MSU_SetSoundID_8F               ; Mid-Ghost captured
         nop
-		
+        
         org     $992C                           ; Ghost ran away
         jsr     MSU_SetSoundID_FF0008
         nop 
@@ -92,10 +92,10 @@ Game
         jsr     MSU_SetSoundID_89               ; Stage Select
         nop
         
-		org 	$13E86
-		jsr     MSU_SetSoundID_98               ; HQ Meeting
+        org     $13E86
+        jsr     MSU_SetSoundID_98               ; HQ Meeting
         nop
-		
+        
         org     $14958
         jsr     MSU_SetSoundID_8D               ; Stage Introduction
         nop
@@ -110,12 +110,12 @@ Game
         org     $178FC
         jsr     MSU_SetSoundID_90               ; Character Select
         nop
-		
-		org 	$17A2C
-		jsr     MSU_SetSoundID_92               ; Character Selected
+        
+        org     $17A2C
+        jsr     MSU_SetSoundID_92               ; Character Selected
         nop
-		
-		
+        
+        
 
 ; MSU-MD DRIVER: -----------------------------------------------------------------------------------
 
@@ -287,7 +287,7 @@ AUDIO_TBL                                       ; #Track Name                   
     dc.b    $95                                 ; Final Boss                    21
     dc.b    $96                                 ; Game Over                     22
     dc.b    $97                                 ; SEGA                          23
-	dc.b    $98                                 ; HQ Meeting                    24
+    dc.b    $98                                 ; HQ Meeting                    24
         
 ; MSU-MD INIT: -------------------------------------------------------------------------------------
 
