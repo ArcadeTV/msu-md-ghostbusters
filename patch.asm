@@ -28,7 +28,8 @@ MCD_CMD_CK      EQU $A1201F
 REG_D0          EQU $FF8880
 REG_D1          EQU $FF8884
 REG_D2          EQU $FF8888
-REG_A0          EQU $FF888C
+REG_D3          EQU $FF888C
+REG_A0          EQU $FF8890
 
 
 
@@ -51,6 +52,9 @@ Game
         org     $1A4                            ; ROM_END
         dc.l    $000FFFFF                       ; Overwrite with 8 MBIT size
         
+		org 	$C04 
+		dc.b 	$60,$06							; Re-activate Cheat Codes from the JPN version
+		
         org     $5A2
         jsr     MSU_StopSound
         nop
@@ -68,7 +72,7 @@ Game
         jsr     MSU_SetSoundID_FF0008
         nop 
         nop
-
+		
         org     $9F7A                           ; Cheat <-------------------------------------------> Disable!!
         dc.w    $6004
         
@@ -94,6 +98,10 @@ Game
         org     $13C80
         jsr     MSU_SetSoundID_98               ; HQ Meeting
         nop
+		
+		org     $13D16
+        jsr     MSU_SetSoundID_98               ; HQ Meeting
+        nop
         
         org     $13E86
         jsr     MSU_SetSoundID_98               ; HQ Meeting
@@ -107,6 +115,10 @@ Game
         jsr     MSU_SetSoundID_99               ; Please catch all the ghosts (Stage Introduction)
         nop
         
+		org     $149FA
+        jsr     MSU_SetSoundID_8B               ; Stage Epilogue
+        nop
+		
         org     $14F8E                          ; SOUND TEST
         jsr     MSU_MusicBypass
         
@@ -172,6 +184,7 @@ SAVE_ORIGINAL_REGISTERS
         move.l  d0,(REG_D0).w                   ; Save d0 to RAM
         move.l  d1,(REG_D1).w                   ; Save d1 to RAM
         move.l  d2,(REG_D2).w                   ; Save d2 to RAM
+        move.l  d3,(REG_D3).w                   ; Save d3 to RAM
         move.l  a0,(REG_A0).w                   ; Save a0 to RAM
         rts
 
@@ -180,6 +193,7 @@ RESTORE_ORIGINAL_REGISTERS
         move.l  (REG_D0).w,d0                   ; Restore d0 from RAM 
         move.l  (REG_D1).w,d1                   ; Restore d1 from RAM 
         move.l  (REG_D2).w,d2                   ; Restore d2 from RAM 
+        move.l  (REG_D3).w,d3                   ; Restore d3 from RAM 
         rts 
 
 MSU_StopSound
@@ -199,6 +213,12 @@ MSU_SetSoundID_89                               ; Stage Select
 MSU_SetSoundID_8A                               ; Pause Menu
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$8A,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+MSU_SetSoundID_8B                               ; Stage Epilogue
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$8B,d0
         jsr     MSU_MusicBypass_noSave
         jsr     RESTORE_ORIGINAL_REGISTERS
         rts
