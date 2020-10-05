@@ -128,6 +128,9 @@ Game
         org     $14F8E                          ; SOUND TEST
         jsr     MSU_MusicBypass
         
+		org 	$16983							; SEGA Logo counter (original $78)
+		dc.b 	$CC
+		
         org     $16C4E
         jsr     MSU_SetSoundID_93               ; Main Theme
         nop
@@ -136,8 +139,15 @@ Game
         jsr     MSU_SetSoundID_90               ; Character Select
         nop
         
+		org 	$1796A							; make "Player selected" longer (original #2)
+		addq.w  #1,d0
+		
         org     $17A2C
         jsr     MSU_SetSoundID_92               ; Character Selected
+        nop
+		
+		org     $17EBC
+        jsr     MSU_SetSoundID_8E               ; Newspaper
         nop
         
         
@@ -222,10 +232,9 @@ MSU_SetSoundID_8A                               ; Pause Menu
         jsr     MSU_MusicBypass_noSave
         jsr     RESTORE_ORIGINAL_REGISTERS
         rts
-MSU_SetSoundID_8B                               ; Stage Epilogue
+MSU_SetSoundID_8B                               ; Stage Epilogue (do nothing, let the newspaper sound play on!)
         jsr     SAVE_ORIGINAL_REGISTERS
-        move.l  #$8B,d0
-        jsr     MSU_MusicBypass_noSave
+        move.b  #$00,($A01C0A).l
         jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_8C                               ; Pause Menu
@@ -237,6 +246,12 @@ MSU_SetSoundID_8C                               ; Pause Menu
 MSU_SetSoundID_8D                               ; Stage Introduction
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$8D,d0
+        jsr     MSU_MusicBypass_noSave
+        jsr     RESTORE_ORIGINAL_REGISTERS
+        rts
+MSU_SetSoundID_8E                               ; Newspaper
+        jsr     SAVE_ORIGINAL_REGISTERS
+        move.l  #$8E,d0
         jsr     MSU_MusicBypass_noSave
         jsr     RESTORE_ORIGINAL_REGISTERS
         rts
