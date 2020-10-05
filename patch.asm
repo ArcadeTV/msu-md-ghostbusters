@@ -52,9 +52,9 @@ Game
         org     $1A4                            ; ROM_END
         dc.l    $000FFFFF                       ; Overwrite with 8 MBIT size
         
-		org 	$C04 
-		dc.b 	$60,$06							; Re-activate Cheat Codes from the JPN version
-		
+        org     $C04 
+        dc.b    $60,$06                         ; Re-activate Cheat Codes from the JPN version
+        
         org     $5A2
         jsr     MSU_StopSound
         nop
@@ -72,16 +72,16 @@ Game
         jsr     MSU_SetSoundID_FF0008
         nop 
         nop
-		
-		org 	$88E4                           ; Cheat (Lives)<-------------------------> Disable!!
-		dc.b 	$00,$1F
-		
+        
+        org     $88E4                           ; Cheat (Lives)<-------------------------> Disable!!
+        dc.b    $00,$1F
+        
         org     $9F7A                           ; Cheat (Energy)<------------------------> Disable!!
         dc.w    $6004
         
-		org 	$9ED8                           ; Cheat (Invincibility)<-----------------> Disable!!
-		dc.w 	$6000
-		
+        org     $9ED8                           ; Cheat (Invincibility)<-----------------> Disable!!
+        dc.w    $6000
+        
         org     $B6FC                           ; Encounter
         jsr     MSU_MusicBypass
         
@@ -104,8 +104,8 @@ Game
         org     $13C80
         jsr     MSU_SetSoundID_98               ; HQ Meeting
         nop
-		
-		org     $13D16
+        
+        org     $13D16
         jsr     MSU_SetSoundID_98               ; HQ Meeting
         nop
         
@@ -121,16 +121,16 @@ Game
         jsr     MSU_SetSoundID_99               ; Please catch all the ghosts (Stage Introduction)
         nop
         
-		org     $149FA
+        org     $149FA
         jsr     MSU_SetSoundID_8B               ; Stage Epilogue
         nop
-		
+        
         org     $14F8E                          ; SOUND TEST
         jsr     MSU_MusicBypass
         
-		org 	$16983							; SEGA Logo counter (original $78)
-		dc.b 	$CC
-		
+        org     $16983                          ; SEGA Logo counter (original $78)
+        dc.b    $CC
+        
         org     $16C4E
         jsr     MSU_SetSoundID_93               ; Main Theme
         nop
@@ -139,14 +139,14 @@ Game
         jsr     MSU_SetSoundID_90               ; Character Select
         nop
         
-		org 	$1796A							; make "Player selected" longer (original #2)
-		addq.w  #1,d0
-		
+        org     $1796A                          ; make "Player selected" longer (original #2)
+        addq.w  #1,d0
+        
         org     $17A2C
         jsr     MSU_SetSoundID_92               ; Character Selected
         nop
-		
-		org     $17EBC
+        
+        org     $17EBC
         jsr     MSU_SetSoundID_8E               ; Newspaper
         nop
         
@@ -166,15 +166,15 @@ MSU_MusicBypass
         jsr     SAVE_ORIGINAL_REGISTERS
 MSU_MusicBypass_noSave
         move.l  #$00,d1                         ; Set d1 to 0 as counter (track number)
-		move.l  #$00,d2                         ; Set d2 to 0 as counter (table index)
+        move.l  #$00,d2                         ; Set d2 to 0 as counter (table index)
         lea     AUDIO_TBL,a0                    ; Load audio table address
 .loop
-		move.w 	(a0,d2),d3						; Load table entry into d3
-        cmp.b   d3,d0                      		; Compare given sound ID in d0 to table entry loaded into d3
+        move.w  (a0,d2),d3                      ; Load table entry into d3
+        cmp.b   d3,d0                           ; Compare given sound ID in d0 to table entry loaded into d3
         beq.s   .ready                          ; If given sound ID matches the entry, d1 is our track number, so we branch to .ready
         addi    #1,d1                           ; Increment d1 (track number)
         addi    #2,d2                           ; Increment d2 by word-size (table index)
-        cmp.b   24,d1                     		; If we reached the total number of tracks, abort. (minus 1 for loop-breaking)
+        cmp.b   24,d1                           ; If we reached the total number of tracks, abort. (minus 1 for loop-breaking)
         beq.s   .passthrough                    ; Branch to .passthrough
         bra.s   .loop                           ; Branch to .loop
         
@@ -182,9 +182,9 @@ MSU_MusicBypass_noSave
         addi    #1,d1                           ; Increment d1 (skipped in the last repetition of the loop)
         tst.b   MCD_STAT                        ; MSU-MD driver ready?
         bne.s   .ready                          ; If not, test again
-		move.w 	(a0,d2),d0
+        move.w  (a0,d2),d0
         move.b  d1,d0                           ; Set play command
-		move.w  d0,MCD_CMD                      ; Send MSU-MD command
+        move.w  d0,MCD_CMD                      ; Send MSU-MD command
         addq.b  #1,MCD_CMD_CK                   ; Increment command clock
         move.b  #$00,($A01C0A).l                ; Mute Sound while sending 0 as sound ID to Z80
         jsr     RESTORE_ORIGINAL_REGISTERS
@@ -312,7 +312,7 @@ MSU_SetSoundID_FFFF11                           ; Intros (multiple)
         jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 
-MSU_SetSoundID_FF0008							; Ghost ran away
+MSU_SetSoundID_FF0008                           ; Ghost ran away
         jsr     SAVE_ORIGINAL_REGISTERS
         move.b  ($FF0008).l,d0
         jsr     MSU_MusicBypass_noSave
