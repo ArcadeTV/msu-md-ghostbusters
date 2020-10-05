@@ -73,9 +73,15 @@ Game
         nop 
         nop
 		
-        org     $9F7A                           ; Cheat <-------------------------------------------> Disable!!
+		org 	$88E4                           ; Cheat (Lives)<-------------------------> Disable!!
+		dc.b 	$00,$1F
+		
+        org     $9F7A                           ; Cheat (Energy)<------------------------> Disable!!
         dc.w    $6004
         
+		org 	$9ED8                           ; Cheat (Invincibility)<-----------------> Disable!!
+		dc.w 	$6000
+		
         org     $B6FC                           ; Encounter
         jsr     MSU_MusicBypass
         
@@ -291,7 +297,7 @@ MSU_SetSoundID_FFFF11                           ; Intros (multiple)
         jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 
-MSU_SetSoundID_FF0008
+MSU_SetSoundID_FF0008							; Ghost ran away
         jsr     SAVE_ORIGINAL_REGISTERS
         move.b  ($FF0008).l,d0
         jsr     MSU_MusicBypass_noSave
