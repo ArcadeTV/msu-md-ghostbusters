@@ -1,13 +1,22 @@
+;  _____               _     _____ _____ 
+; |  _  |___ ___ ___ _| |___|_   _|  |  |
+; |     |  _|  _| .'| . | -_| | | |  |  |
+; |__|__|_| |___|__,|___|___| |_|  \___/ 
+;   
 ; --------------------------------------------------------------------------------------------------
 ; M S U - M D  R O M H A C K
-; v0.1_beta, 2020-10-01
+; v1, 2020-10-01
 ; --------------------------------------------------------------------------------------------------
-
+; 
 ; ROM:          Ghostbusters (W) (REV01) [!].bin
 ; CRC:          792DF93B
 ; Padding:      8MBit
 ; Sound Driver: SMPS Z80
-
+; 
+; Apply "SCD Color Hack" first!
+; https://www.romhacking.net/hacks/2130/
+; CRC after patching should be 44C92F5E
+; 
 ; --------------------------------------------------------------------------------------------------
 
 ; I/O
@@ -68,20 +77,47 @@ Game
         jsr     MSU_SetSoundID_8F               ; Mid-Ghost captured
         nop
         
-        org     $992C                           ; Ghost ran away
+		org 	$6C626
+		;dc.l 	tilemap_ray						; GFX hack: modify tlemap address to custom location
+		
+		org 	$6C62D
+		;dc.b 	$09								; GFX hack: modify tlemap width from $05 to $09
+		
+		org 	$6C62F
+		;dc.b 	$17								; GFX hack: modify tlemap height from $0B to $17
+		
+		org 	$6C640
+		;dc.l 	tilemap_peter					; GFX hack: modify tlemap address to custom location
+		
+		org 	$6C647
+		;dc.b 	$09								; GFX hack: modify tlemap width from $05 to $09
+		
+		org 	$6C649
+		;dc.b 	$17								; GFX hack: modify tlemap height from $0B to $17
+		
+		org 	$6C65A
+		;dc.l 	tilemap_egon					; GFX hack: modify tlemap address to custom location
+		
+		org 	$6C661
+		;dc.b 	$09								; GFX hack: modify tlemap width from $05 to $09
+		
+		org 	$6C663
+		;dc.b 	$17								; GFX hack: modify tlemap height from $0B to $17
+		
+        ;org     $88E4                           ; Cheat (Lives)<-------------------------> Disable!!
+        ;dc.b    $00,$1F
+        
+		org     $992C                           ; Ghost ran away
         jsr     MSU_SetSoundID_FF0008
         nop 
         nop
         
-        org     $88E4                           ; Cheat (Lives)<-------------------------> Disable!!
-        dc.b    $00,$1F
+        ;org     $9ED8                           ; Cheat (Invincibility)<-----------------> Disable!!
+        ;dc.w    $6000
         
-        org     $9F7A                           ; Cheat (Energy)<------------------------> Disable!!
-        dc.w    $6004
-        
-        org     $9ED8                           ; Cheat (Invincibility)<-----------------> Disable!!
-        dc.w    $6000
-        
+		;org     $9F7A                           ; Cheat (Energy)<------------------------> Disable!!
+        ;dc.w    $6004
+		
         org     $B6FC                           ; Encounter
         jsr     MSU_MusicBypass
         
@@ -130,11 +166,14 @@ Game
         
         org     $16983                          ; SEGA Logo counter (original $78)
         dc.b    $CC
+		
+		org 	$16C20							; GFX hack: Intro/faces
+		;lea		($D5000).l,a0					; Use comined, nemesis compressed tiles address here (manual paste in hex editor required at specified address)
         
         org     $16C4E
         jsr     MSU_SetSoundID_93               ; Main Theme
         nop
-
+		
         org     $178FC
         jsr     MSU_SetSoundID_90               ; Character Select
         nop
@@ -224,99 +263,83 @@ MSU_SetSoundID_89                               ; Stage Select
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$89,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_8A                               ; Pause Menu
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$8A,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_8B                               ; Stage Epilogue (do nothing, let the newspaper sound play on!)
         jsr     SAVE_ORIGINAL_REGISTERS
         move.b  #$00,($A01C0A).l
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_8C                               ; Pause Menu
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$8C,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_8D                               ; Stage Introduction
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$8D,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_8E                               ; Newspaper
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$8E,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_8F                               ; Mid-Ghost captured
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$8F,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_90                               ; Character Select
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$90,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_92                               ; Character Selected
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$92,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 MSU_SetSoundID_93                               ; Main Theme
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$93,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts     
 MSU_SetSoundID_97                               ; SEGA
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$97,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts 
 MSU_SetSoundID_98                               ; HQ Meeting
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$98,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts 
 MSU_SetSoundID_99                               ; HQ Meeting
         jsr     SAVE_ORIGINAL_REGISTERS
         move.l  #$99,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts 
         
 MSU_SetSoundID_FF00B2                           ; Stages (multiple)
         jsr     SAVE_ORIGINAL_REGISTERS
         move.b  ($FF00B2).l,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 
-MSU_SetSoundID_FFFF11                           ; Intros (multiple)
+MSU_SetSoundID_FFFF11                           ; Stage Intros (multiple)
         jsr     SAVE_ORIGINAL_REGISTERS
         move.b  ($FFFF11).l,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
 
 MSU_SetSoundID_FF0008                           ; Ghost ran away
         jsr     SAVE_ORIGINAL_REGISTERS
         move.b  ($FF0008).l,d0
         jsr     MSU_MusicBypass_noSave
-        jsr     RESTORE_ORIGINAL_REGISTERS
         rts
         
         
@@ -393,6 +416,17 @@ jump_lockout
         
 
 
+; GFX: ---------------------------------------------------------------------------------------------
+		align   2
+new_faces_palette
+		dc.b 	$08,$AC,$06,$8C,$08,$AC,$06,$8A,$04,$68,$0A,$CE,$02,$46,$00,$00,$00,$04,$00,$24,$0E,$EE,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+tilemap_ray
+		dc.w	$0379,$037A,$037B,$037C,$037D,$037E,$037F,$0380,$0381,$0382,$0383,$0384,$0385,$0386,$0387,$0388,$0389,$038A,$038B,$038C,$038D,$038E,$038F,$0390,$0391,$0392,$0393,$0394,$0395,$0396,$0397,$0398,$0399,$039A,$039B,$039C,$039D,$039E,$039F,$03A0,$03A1,$03A2,$03A3,$03A4,$03A5,$03A6,$03A7,$03A8,$03A9,$03AA,$03AB,$03AC,$03AD,$03AE,$03AF,$03B0,$03B1,$03B2,$03B3,$03B4,$03B5,$03B6,$03B7,$03B8,$03B9,$03BA,$03BB,$03BC,$03BD,$03BE,$03BF,$03C0,$03C1,$03C2,$03C3,$03C4,$03C5,$03C6,$03C7,$03C8,$03C9,$03CA,$03CB,$03CC,$03CD,$03CE,$03CF,$03D0,$03D1,$03D2,$03D3,$03D4,$03D5,$03D6,$03D7,$03D8,$03D9,$03DA,$03DB,$03DC,$03DD,$03DE,$03DF,$03E0,$03E1,$03E2,$03E3,$03E4,$03E5,$03E6,$03E7,$03E8,$03E9,$03EA,$03EB,$03EC,$03ED,$03EE,$03EF,$03F0,$03F1,$03F2,$03F3,$03F4,$03F5,$03F6,$03F7,$03F8,$03F9,$03FA,$03FB,$03FC,$03FD,$03FE,$03FF,$0400,$0401,$0402,$0403,$0404,$0405,$0406,$0407,$0408,$0409,$040A,$040B,$040C,$040D,$040E,$040F,$0410,$0411,$0412,$0413,$0414,$0415,$0416,$0417,$0418,$0419,$041A,$041B,$041C,$041D,$041E,$041F,$0420,$0421,$0422,$0423,$0424,$0425,$0426,$0427,$0428,$0429,$042A,$042B,$042C,$042D,$042E,$042F,$0430,$0431,$0432,$0433,$0434,$0435,$0436,$0437,$0438,$0439,$043A,$043B,$043C,$043D,$043E,$043F,$0440,$0441,$0442,$0443,$0444,$0445,$0446,$0447,$0448,$0449,$044A,$044B,$044C,$044D,$044E,$044F,$0450,$0451,$0452,$0453,$0454,$0455,$0456,$0457,$0458,$0459,$045A,$045B,$045C,$045D,$045E,$045F,$0460,$0461,$0462,$0463,$0464,$0465,$0466,$0467,$0468
+tilemap_peter
+		dc.w	$0469,$046A,$046B,$046C,$046D,$046E,$046F,$0470,$0471,$0472,$0473,$0474,$0475,$0476,$0477,$0478,$0479,$047A,$047B,$047C,$047D,$047E,$047F,$0480,$0481,$0482,$0483,$0484,$0485,$0486,$0487,$0488,$0489,$048A,$048B,$048C,$048D,$048E,$048F,$0490,$0491,$0492,$0493,$0494,$0495,$0496,$0497,$0498,$0499,$049A,$049B,$049C,$049D,$049E,$049F,$04A0,$04A1,$04A2,$04A3,$04A4,$04A5,$04A6,$04A7,$04A8,$04A9,$04AA,$04AB,$04AC,$04AD,$04AE,$04AF,$04B0,$04B1,$04B2,$04B3,$04B4,$04B5,$04B6,$04B7,$04B8,$04B9,$04BA,$04BB,$04BC,$04BD,$04BE,$04BF,$04C0,$04C1,$04C2,$04C3,$04C4,$04C5,$04C6,$04C7,$04C8,$04C9,$04CA,$04CB,$04CC,$04CD,$04CE,$04CF,$04D0,$04D1,$04D2,$04D3,$04D4,$04D5,$04D6,$04D7,$04D8,$04D9,$04DA,$04DB,$04DC,$04DD,$04DE,$04DF,$04E0,$04E1,$04E2,$04E3,$04E4,$04E5,$04E6,$04E7,$04E8,$04E9,$04EA,$04EB,$04EC,$04ED,$04EE,$04EF,$04F0,$04F1,$04F2,$04F3,$04F4,$04F5,$04F6,$04F7,$04F8,$04F9,$04FA,$04FB,$04FC,$04FD,$04FE,$04FF,$0500,$0501,$0502,$0503,$0504,$0505,$0506,$0507,$0508,$0509,$050A,$050B,$050C,$050D,$050E,$050F,$0510,$0511,$0512,$0513,$0514,$0515,$0516,$0517,$0518,$0519,$051A,$051B,$051C,$051D,$051E,$051F,$0520,$0521,$0522,$0523,$0524,$0525,$0526,$0527,$0528,$0529,$052A,$052B,$052C,$052D,$052E,$052F,$0530,$0531,$0532,$0533,$0534,$0535,$0536,$0537,$0538,$0539,$053A,$053B,$053C,$053D,$053E,$053F,$0540,$0541,$0542,$0543,$0544,$0545,$0546,$0547,$0548,$0549,$054A,$054B,$054C,$054D,$054E,$054F,$0550,$0551,$0552,$0553,$0554,$0555,$0556,$0557,$0558
+tilemap_egon
+		dc.w	$0559,$055A,$055B,$055C,$055D,$055E,$055F,$0560,$0561,$0562,$0563,$0564,$0565,$0566,$0567,$0568,$0569,$056A,$056B,$056C,$056D,$056E,$056F,$0570,$0571,$0572,$0573,$0574,$0575,$0576,$0577,$0578,$0579,$057A,$057B,$057C,$057D,$057E,$057F,$0580,$0581,$0582,$0583,$0584,$0585,$0586,$0587,$0588,$0589,$058A,$058B,$058C,$058D,$058E,$058F,$0590,$0591,$0592,$0593,$0594,$0595,$0596,$0597,$0598,$0599,$059A,$059B,$059C,$059D,$059E,$059F,$05A0,$05A1,$05A2,$05A3,$05A4,$05A5,$05A6,$05A7,$05A8,$05A9,$05AA,$05AB,$05AC,$05AD,$05AE,$05AF,$05B0,$05B1,$05B2,$05B3,$05B4,$05B5,$05B6,$05B7,$05B8,$05B9,$05BA,$05BB,$05BC,$05BD,$05BE,$05BF,$05C0,$05C1,$05C2,$05C3,$05C4,$05C5,$05C6,$05C7,$05C8,$05C9,$05CA,$05CB,$05CC,$05CD,$05CE,$05CF,$05D0,$05D1,$05D2,$05D3,$05D4,$05D5,$05D6,$05D7,$05D8,$05D9,$05DA,$05DB,$05DC,$05DD,$05DE,$05DF,$05E0,$05E1,$05E2,$05E3,$05E4,$05E5,$05E6,$05E7,$05E8,$05E9,$05EA,$05EB,$05EC,$05ED,$05EE,$05EF,$05F0,$05F1,$05F2,$05F3,$05F4,$05F5,$05F6,$05F7,$05F8,$05F9,$05FA,$05FB,$05FC,$05FD,$05FE,$05FF,$0600,$0601,$0602,$0603,$0604,$0605,$0606,$0607,$0608,$0609,$060A,$060B,$060C,$060D,$060E,$060F,$0610,$0611,$0612,$0613,$0614,$0615,$0616,$0617,$0618,$0619,$061A,$061B,$061C,$061D,$061E,$061F,$0620,$0621,$0622,$0623,$0624,$0625,$0626,$0627,$0628,$0629,$062A,$062B,$062C,$062D,$062E,$062F,$0630,$0631,$0632,$0633,$0634,$0635,$0636,$0637,$0638,$0639,$063A,$063B,$063C,$063D,$063E,$063F,$0640,$0641,$0642,$0643,$0644,$0645,$0646,$0647,$0648
+		
 ; LOCKOUT SCREEN: ----------------------------------------------------------------------------------
 
         align   2
